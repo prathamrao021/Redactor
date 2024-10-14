@@ -23,3 +23,11 @@ extractincidents() - this functions has these parameters, does this process, ret
 
 ## Bugs and Assumptions
 ...
+
+
+## To do List
+[] censor flags
+[] --names
+[] --dates
+[] --phones
+[] --address
