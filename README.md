@@ -26,8 +26,8 @@ extractincidents() - this functions has these parameters, does this process, ret
 
 
 ## To do List
-[] censor flags
-[] --names
+ [] censor flags
+ [] --names
 [] --dates
 [] --phones
 [] --address
