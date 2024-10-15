@@ -31,3 +31,7 @@ extractincidents() - this functions has these parameters, does this process, ret
 - [ ] --dates
 - [ ] --phones
 - [ ] --address
+- [ ] get dataset
+- [ ] .censored file
+- [ ] stderr, stdout
+- [ ] 
