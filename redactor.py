@@ -15,16 +15,18 @@ def handling_multiple_files(nlp, files, name_flag, date_flag, phones_flag, addre
     
     for f in files:
         data = get_data(f)
-        if name_flag:
-            output_data = redact_names(nlp, data, stats, f)
-        if date_flag:
-            output_data = redact_dates(nlp, output_data, stats, f)
-        if phones_flag:
-            output_data = redact_phones(output_data, stats, f)
-        if address_flag:
-            output_data = redact_addresses(nlp, output_data, stats, f) 
-        # if concept:
-        #     output_data = redact_concept(nlp, output_data, concept, stats, f)
+        # if name_flag:
+        #     output_data = redact_names(nlp, data, stats, f)
+        # if date_flag:
+        #     output_data = redact_dates(nlp, data, stats, f)
+        # if phones_flag:
+        #     output_data = redact_phones(data, stats, f)
+        # if address_flag:
+        #     output_data = redact_addresses(nlp, data, stats, f) 
+        if concept:
+            concept_words = get_similar_words(concept)
+            # print(concept_words)
+            output_data = redact_concepts(nlp, data, concept_words, stats, f)
         if os.path.exists(output_dir) == False:
             os.makedirs(output_dir)
         fileName = f"{output_dir}{f.split('/')[-1]}.censored"
@@ -49,7 +51,10 @@ def redact_names(nlp, data, stats, filename):
     doc = nlp(data)
     
     mails = list(re.finditer(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+", data))
+    name_mail =[]
     
+    for mail in mails:
+        name_mail.append([mail.group().split('@')[0],mail.start(),mail.end()])
     redacted_data = data
     
     for ent in doc.ents:
@@ -59,15 +64,14 @@ def redact_names(nlp, data, stats, filename):
                 print(f"{filename}|PERSON|{ent.text}|{ent.start_char}|{ent.end_char}", file=sys.stderr)
             elif stats == 'stdout':
                 print(f"{filename}|PERSON|{ent.text}|{ent.start_char}|{ent.end_char}", file=sys.stdout)
-    
-    for mail in mails:
-        redacted_data = redacted_data.replace(mail.group(), redacted_char*len(mail.group()))
-        if stats == 'stderr':
-            print(f"{filename}|EMAIL|{mail.group()}|{mail.start()}|{mail.end()}", file=sys.stderr)
-        elif stats == 'stdout':
-            print(f"{filename}|EMAIL|{mail.group()}|{mail.start()}|{mail.end()}")
-    return redacted_data
 
+    for mail in name_mail:
+        redacted_data = redacted_data.replace(mail[0], redacted_char*len(mail))
+        if stats == 'stderr':
+            print(f"{filename}|PERSON|{mail[0]}|{mail[1]}|{mail[2]}", file=sys.stderr)
+        elif stats == 'stdout':
+            print(f"{filename}|PERSON|{mail[0]}|{mail[1]}|{mail[2]}")
+    return redacted_data
 
 
 
@@ -76,15 +80,17 @@ def redact_dates(nlp, data, stats, filename):
     
     doc = nlp(data)
     
-    redacted_data = data
-    for ent in doc.ents:
+    redacted_data = list(data)  # Convert to list for mutable operations
+    for ent in reversed(doc.ents):
         if ent.label_ == "DATE":
-            redacted_data = redacted_data.replace(ent.text, redacted_char*len(ent.text))
+            start, end = ent.start_char, ent.end_char
+            redacted_data[start:end] = redacted_char * (end - start)
             if stats == 'stderr':
-                print(f"{filename}|DATE|{ent.text}|{ent.start_char}|{ent.end_char}", file=sys.stderr)
+                print(f"{filename}|DATE|{ent.text}|{start}|{end}", file=sys.stderr)
             elif stats == 'stdout':
-                print(f"{filename}|DATE|{ent.text}|{ent.start_char}|{ent.end_char}")
-    return redacted_data
+                print(f"{filename}|DATE|{ent.text}|{start}|{end}")
+
+    return ''.join(redacted_data)  # Convert back to string
 
 
 
@@ -92,7 +98,8 @@ def redact_dates(nlp, data, stats, filename):
 
 def redact_phones(data, stats, filename):
     redacted_char = '\u2588'
-    phones = list(re.finditer(r'\b(?:\+?(\d{1,3})?[-.\s]?)?\(?(\d{3})\)?[-.\s]?(\d{3})[-.\s]?(\d{4})\b', data))
+
+    phones = list(re.finditer(r'\b(?:\+?(\d{1,3})?[-.\s]?)?\(?(\d{2,3})\)?[-.\s]?(\d{3,4})[-.\s]?(\d{4})\b', data))
     redacted_data = data
     for phone in phones:
         redacted_data = redacted_data.replace(phone.group(), redacted_char*len(phone.group()))
@@ -109,16 +116,19 @@ def redact_phones(data, stats, filename):
 def redact_addresses(nlp, data, stats, filename):
     redacted_char = '\u2588'
     addresses = pyap.parse(data, country='US')
-    redacted_data = data
+    redacted_data = list(data)
 
     for address in addresses:
-        redacted_data = redacted_data.replace(address.full_address, redacted_char*len(address.full_address))
-        if stats == 'stderr':
-            print(f"{filename}|ADDRESS|{address.full_address}|{address.start()}|{address.end()}", file=sys.stderr)
-        elif stats == 'stdout':
-            print(f"{filename}|ADDRESS|{address.full_address}|{address.start()}|{address.end()}")
+        pattern = re.escape(address.full_address)
+        for match in re.finditer(pattern, data):
+            start, end = match.start(), match.end()
+            redacted_data[start:end] = redacted_char * (end - start)
+            if stats == 'stderr':
+                print(f"{filename}|ADDRESS|{address.full_address}|{start}|{end}", file=sys.stderr)
+            elif stats == 'stdout':
+                print(f"{filename}|ADDRESS|{address.full_address}|{start}|{end}")
             
-    
+    redacted_data = ''.join(redacted_data)
     doc = nlp(data)
     
     for ent in doc.ents:
@@ -128,42 +138,40 @@ def redact_addresses(nlp, data, stats, filename):
                 print(f"{filename}|ADDRESS|{ent.text}|{ent.start_char}|{ent.end_char}", file=sys.stderr)
             elif stats == 'stdout':
                 print(f"{filename}|ADDRESS|{ent.text}|{ent.start_char}|{ent.end_char}")
-
     
-    # matcher = Matcher(nlp.vocab)
-    
-    # pattern = [
-    # {"LIKE_NUM": True},
-    # {"IS_ALPHA": True, "OP": "+"},
-    # {"LOWER": {"IN": ["street", "st", "avenue", "ave", "boulevard", "blvd", "road", "rd", "lane", "ln", "drive", "dr", "court", "ct", "parkway", "pkwy", "place", "pl"]}},
-    # {"IS_PUNCT": True, "OP": "?"},
-    # {"IS_ALPHA": True, "OP": "+"},
-    # {"IS_ALPHA": True},
-    # ]
-    
-    # matcher.add("ADDRESS_PATTERN", [pattern])
-    
-    # doc = nlp(data)
-    
-    # matches = matcher(doc)
-    
-    # for match_id, start, end in matches:
-    #     redacted_data = redacted_data.replace(doc[start:end].text, redacted_char*len(doc[start:end].text))
-    #     if stats == 'stderr':
-    #         print(f"{filename}|ADDRESS|{doc[start:end].text}|{start}|{end}", file=sys.stderr)
-    #     elif stats == 'stdout':
-    #         print(f"{filename}|ADDRESS|{doc[start:end].text}|{start}|{end}")
-    
-    # address_pattern = re.finditer(
-    # r'\d{1,5}\s\w+\s(?:Street|St|Avenue|Ave|Boulevard|Blvd|Road|Rd|Lane|Ln|Drive|Dr|Court|Ct|Parkway|Pkwy|Place|Pl)\,?\s[A-Za-z\s]+\,?\s[A-Za-z\s]+\,?\s(?:[A-Za-z]{2,})?', data)
     return redacted_data
 
 
+def get_similar_words(concept):
+    doc = nlp(concept)
+    
+    similar_words = set([concept])  
+    
+    for word in nlp.vocab:  
+        if word.has_vector and word.is_lower and word.is_alpha:  
+            similarity = doc.similarity(nlp(word.text))
+            if similarity > 0.5:  
+                similar_words.add(word.text)
+    
+    return similar_words
 
-
-
-def redact_concept(nlp, data, concept, stats, filename):
-    pass
+def redact_concepts(nlp, data, concept_words, stats, filename):
+    redacted_char = '\u2588'
+    
+    doc = nlp(data)
+    redacted_data = data
+    
+    for sent in doc.sents:
+        for word in sent:
+            if word.text.lower() in concept_words:
+                redacted_data = redacted_data.replace(sent.text, redacted_char*len(sent.text))
+                
+                if stats == 'stderr':
+                    print(f"{filename}|CONCEPT|{sent.text}|{sent.start_char}|{sent.end_char}", file=sys.stderr)
+                elif stats == 'stdout':
+                    print(f"{filename}|CONCEPT|{sent.text}|{sent.start_char}|{sent.end_char}")
+    
+    return redacted_data
 
 
 

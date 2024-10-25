@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "a3ad78beb69ac5c5e0f85dc7afa052e6f0cbbbbd9842684a0917b61544c3474e"
+            "sha256": "301e84c5441101139f80a536e814ab1a3b40f41994b787e11c2ecdc55550d694"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -319,11 +319,11 @@
         },
         "fsspec": {
             "hashes": [
-                "sha256:4b0afb90c2f21832df142f292649035d80b421f60a9e1c027802e5a0da2b04e8",
-                "sha256:a0947d552d8a6efa72cc2c730b12c41d043509156966cca4fb157b0f2a0c574b"
+                "sha256:03b9a6785766a4de40368b88906366755e2819e758b83705c88cd7cb5fe81871",
+                "sha256:eda2d8a4116d4f2429db8550f2457da57279247dd930bb12f821b58391359493"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==2024.9.0"
+            "version": "==2024.10.0"
         },
         "idna": {
             "hashes": [
@@ -577,11 +577,11 @@
         },
         "networkx": {
             "hashes": [
-                "sha256:e30a87b48c9a6a7cc220e732bffefaee585bdb166d13377734446ce1a0620eed",
-                "sha256:f9df45e85b78f5bd010993e897b4f1fdb242c11e015b101bd951e5c0e29982d8"
+                "sha256:307c3669428c5362aab27c8a1260aa8f47c4e91d3891f48be0141738d8d053e1",
+                "sha256:df5d4365b724cf81b8c6a7312509d0c22386097011ad1abe274afd5e9d3bbc5f"
             ],
             "markers": "python_version >= '3.10'",
-            "version": "==3.4.1"
+            "version": "==3.4.2"
         },
         "numpy": {
             "hashes": [
@@ -746,6 +746,14 @@
             ],
             "markers": "python_version >= '3.8'",
             "version": "==24.1"
+        },
+        "phonenumbers": {
+            "hashes": [
+                "sha256:5c51939acefa390eb74119750afb10a85d3c628dc83fd62c52d6f532fcf5d205",
+                "sha256:62d8df9b0f3c3c41571c6b396f044ddd999d61631534001b8be7fdf7ba1b18f3"
+            ],
+            "index": "pypi",
+            "version": "==8.13.48"
         },
         "pluggy": {
             "hashes": [
@@ -1033,11 +1041,11 @@
         },
         "rich": {
             "hashes": [
-                "sha256:51a2c62057461aaf7152b4d611168f93a9fc73068f8ded2790f29fe2b5366d0c",
-                "sha256:8c82a3d3f8dcfe9e734771313e606b39d8247bb6b826e196f4914b333b743cf1"
+                "sha256:9836f5096eb2172c9e77df411c1b009bace4193d6a481d534fea75ebba758283",
+                "sha256:bc1e01b899537598cf02579d2b9f4a415104d3fc439313a7a2c165d76557a08e"
             ],
             "markers": "python_full_version >= '3.8.0'",
-            "version": "==13.9.2"
+            "version": "==13.9.3"
         },
         "setuptools": {
             "hashes": [

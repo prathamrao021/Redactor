@@ -6,7 +6,7 @@ Name:
 
 
 # How to install
-pipenv install
+pipenv run python redactor.py --input 'demo_files/*' --names --dates --phones --address --concept 'kids' --output 'output/' --stats stderr
 
 ## How to run
 pipenv run ...
@@ -23,6 +23,7 @@ extractincidents() - this functions has these parameters, does this process, ret
 
 ## Bugs and Assumptions
 ...
+- for phone number, even if there are around 10 which are ID's and not the number.
 
 
 ## To do List
