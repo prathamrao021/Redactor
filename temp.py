@@ -182,14 +182,14 @@
 #     print(topic)
 
 #--------------------------------
-# from redactor import redact_concepts, get_similar_words, redact_addresses
-# import argparse
-# import sys
-# import spacy
-# import re
-# import pyap
-# import os
-# import glob
+from redactor import redact_concepts, get_similar_words, redact_addresses
+import argparse
+import sys
+import spacy
+import re
+import pyap
+import os
+import glob
 
 # def test_redact_dates():
 #     data = """John Smith was excited to move into his new home at 123 Maple Street, Springfield, IL 62704. He had spent months searching for the perfect place and finally found it. His friend, Jane Doe, lived nearby at 456 Oak Avenue, Springfield, IL 62705, and they planned to meet up often. John's office was located at 789 Pine Road, Suite 101, Springfield, IL 62706, just a short drive from his new house.
@@ -212,4 +212,22 @@
 #     output_data=redact_addresses(nlp, data, "stderr", "Given Input")
 #     print(output_data)
 # test_redact_dates()
+
+# def test_redact_concepts():
+#     data = """Jack pursued his journey. He walked on till after sunset, when to his great joy, he espied a large mansion. A plain-looking woman was at the door: he accosted her, begging she would give him a morsel of bread and a night’s lodging. She expressed the greatest surprise, and said it was quite uncommon to see a human being near their house; for it was well known that her husband was a powerful giant, who would never eat anything but human flesh, if he could possibly get it; that he would walk fifty miles to procure it, usually being out the whole day for that purpose.
+#     This account greatly terrified Jack, but still he hoped to elude the giant, and therefore he again entreated the woman to take him in for one night only, and hide him where she thought proper. She at last suffered herself to be persuaded, for she was of a compassionate and generous disposition, and took him into the house. First, they entered a fine large hall, magnificently furnished; they then passed through several spacious rooms, in the same style of grandeur; but all appeared forsaken and desolate.
+#     A long gallery came next; it was very dark – just light enough to show that, instead of a wall on one side, there was a grating of iron which parted off a dismal dungeon, from whence issued the groans of those victims whom the cruel giant reserved in confinement for his own voracious appetite.
+#     Poor Jack was half dead with fear, and would have given the world to have been with his mother again, for he now began to doubt if he should ever see her more; he even mistrusted the good woman, and thought she had let him into the house for no other purpose than to lock him up among the unfortunate people in the dungeon.
+#     However, she bade Jack sit down, and gave him plenty to eat and drink; and he, not seeing anything to make him uncomfortable, soon forgot his fear and was just beginning to enjoy himself, when he was startled by a loud knocking at the outer door, which made the whole house shake."""
+#     concept=['house']
     
+#     nlp = spacy.load("en_core_web_trf")
+    
+#     concept_words = get_similar_words(concept)
+#     output_data = redact_concepts(nlp, data, concept_words, 'stderr', 'Given Input')
+    
+#     print(output_data)
+    
+#     with open("output.txt", "w") as f:
+#         f.write(output_data)
+# test_redact_concepts()
