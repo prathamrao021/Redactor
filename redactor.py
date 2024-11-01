@@ -5,15 +5,23 @@ import re
 import pyap
 import os
 import glob
-from spacy_wordnet.wordnet_annotator import WordnetAnnotator
-from scipy.spatial.distance import cosine
 import requests
-from spacy.language import Language
+from names_dataset import NameDataset
+from spacy.tokenizer import Tokenizer
+from spacy.util import compile_infix_regex
+from transformers import pipeline
+import nltk
+from nltk.tokenize import sent_tokenize
+
+nltk.download('punkt_tab')
 
 def get_file_vector(input):
     matching_files = glob.glob(input)
     return matching_files
 
+def custom_tokenizer(nlp):
+    infix_re = compile_infix_regex(nlp.Defaults.infixes + [r'[_@:.]'])
+    return Tokenizer(nlp.vocab, infix_finditer=infix_re.finditer)
 
 def get_data(input):
     data = ''
@@ -27,6 +35,7 @@ def handling_multiple_files(nlp, files, name_flag, date_flag, phones_flag, addre
         if os.path.exists(stats):
                 os.remove(stats)
     for f in files:
+        output_data=get_data(f)
         data = get_data(f)
         if name_flag:
             output_data = redact_names(nlp, data, stats, f)
@@ -38,12 +47,10 @@ def handling_multiple_files(nlp, files, name_flag, date_flag, phones_flag, addre
             output_data = redact_addresses(nlp, output_data, stats, f) 
         if concept:
             concept_words = get_similar_words(concept)
-            output_data = redact_concepts(nlp, output_data, concept_words, stats, f)
+            output_data = redact_concepts(nlp, output_data, concept_words, concept, stats, f)
         if os.path.exists(output_dir) == False:
             os.makedirs(output_dir)
         
-        
-            
         fileName = f"{output_dir}{f.split('/')[-1]}.censored"
         with open(fileName, "w") as file:
             file.write(output_data)
@@ -65,6 +72,7 @@ def redact_names(nlp, data, stats, filename):
     
     
     redacted_data = data
+    nd = NameDataset()
     
     for ent in doc.ents:
         if ent.label_ == "PERSON":
@@ -80,21 +88,41 @@ def redact_names(nlp, data, stats, filename):
                 with open(stats, "a") as f:
                     f.write(stats_data)
                     f.write("\n")
-
-    # for mail in name_mail:
-    #     email_address, start, end = mail
-    #     redacted_data = redacted_data[:mail[1]] + redacted_char * (mail[2] - mail[1]-1) + redacted_data[mail[2]-1:]
-        
-    #     stats_data = f"{filename}|PERSON|{email_address}|{start}|{end-1}"
-        
-    #     if stats == 'stderr':
-    #         print(stats_data, file=sys.stderr)
-    #     elif stats == 'stdout':
-    #         print(stats_data)
-    #     else:
-    #         with open(stats, "a") as f:
-    #             f.write(stats_data)
-    #             f.write("\n")
+    
+    for ent in doc.ents:
+        search = nd.search(ent.text)
+        if search['first_name'] is None and search['last_name'] is None:
+            continue
+        if search['first_name'] is not None:
+            for probs in search["first_name"]["country"].values():
+                if probs > 0.3:
+                    redacted_data = redacted_data.replace(ent.text, redacted_char*len(ent.text))
+            
+                    stats_data = f"{filename}|PERSON|{ent.text}|{ent.start_char}|{ent.end_char}"
+                    
+                    if stats == 'stderr':
+                        print(stats_data, file=sys.stderr)
+                    elif stats == 'stdout':
+                        print(stats_data)
+                    else:
+                        with open(stats, "a") as f:
+                            f.write(stats_data)
+                            f.write("\n")
+        if search['last_name'] is not None:
+            for probs in search["last_name"]["country"].values():
+                if probs > 0.3:
+                    redacted_data = redacted_data.replace(ent.text, redacted_char*len(ent.text))
+                    
+                    stats_data = f"{filename}|PERSON|{ent.text}|{ent.start_char}|{ent.end_char}"
+                    
+                    if stats == 'stderr':
+                        print(stats_data, file=sys.stderr)
+                    elif stats == 'stdout':
+                        print(stats_data)
+                    else:
+                        with open(stats, "a") as f:
+                            f.write(stats_data)
+                            f.write("\n")
     
     for email in emails:
         username, domain = email.groups()
@@ -219,12 +247,12 @@ def get_similar_words(concept):
     return synonyms
 
 
-def redact_concepts(nlp, data, concept_words, stats, filename):
+def redact_concepts(nlp, data, concept_words, concept, stats, filename):
     redacted_char = '\u2588'
     
     doc = nlp(data)
     redacted_data = data
-    
+    print(doc)
     for sent in doc.sents:
         for word in sent:
             if word.text.lower() in concept_words:
@@ -239,6 +267,30 @@ def redact_concepts(nlp, data, concept_words, stats, filename):
                     with open(stats, "a") as f:
                         f.write(stats_data)
                         f.write("\n")
+    
+    classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
+    redacted_text = []
+    
+    for sent in sent_tokenize(data):
+        
+        result = classifier(sent, candidate_labels=concept)
+        if any(result['labels'][i] in concept and result['scores'][i] > 0.33 for i in range(len(result['labels']))):
+            redacted_text.append("█" * len(sent))
+            start_char = data.find(sent)
+            end_char = start_char + len(sent)
+            stats_data = f"{filename}|CONCEPT|{sent}|{start_char}|{end_char}"
+            if stats == 'stderr':
+                print(stats_data, file=sys.stderr)
+            elif stats == 'stdout':
+                print(stats_data)
+            else:
+                with open(stats, "a") as f:
+                    f.write(stats_data)
+                    f.write("\n")
+        else:
+            redacted_text.append(sent)
+    redacted_data = " ".join(redacted_text)
+    
     return redacted_data
 
 if __name__ == "__main__":
@@ -260,6 +312,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     nlp = spacy.load("en_core_web_trf")
+    nlp.tokenizer = custom_tokenizer(nlp)
     
     all_files = get_file_vector(args.input)
     

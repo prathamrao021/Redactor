@@ -182,14 +182,14 @@
 #     print(topic)
 
 #--------------------------------
-from redactor import redact_concepts, get_similar_words, redact_addresses
-import argparse
-import sys
-import spacy
-import re
-import pyap
-import os
-import glob
+# from redactor import redact_concepts, get_similar_words, redact_addresses
+# import argparse
+# import sys
+# import spacy
+# import re
+# import pyap
+# import os
+# import glob
 
 # def test_redact_dates():
 #     data = """John Smith was excited to move into his new home at 123 Maple Street, Springfield, IL 62704. He had spent months searching for the perfect place and finally found it. His friend, Jane Doe, lived nearby at 456 Oak Avenue, Springfield, IL 62705, and they planned to meet up often. John's office was located at 789 Pine Road, Suite 101, Springfield, IL 62706, just a short drive from his new house.
@@ -219,6 +219,7 @@ import glob
 #     A long gallery came next; it was very dark – just light enough to show that, instead of a wall on one side, there was a grating of iron which parted off a dismal dungeon, from whence issued the groans of those victims whom the cruel giant reserved in confinement for his own voracious appetite.
 #     Poor Jack was half dead with fear, and would have given the world to have been with his mother again, for he now began to doubt if he should ever see her more; he even mistrusted the good woman, and thought she had let him into the house for no other purpose than to lock him up among the unfortunate people in the dungeon.
 #     However, she bade Jack sit down, and gave him plenty to eat and drink; and he, not seeing anything to make him uncomfortable, soon forgot his fear and was just beginning to enjoy himself, when he was startled by a loud knocking at the outer door, which made the whole house shake."""
+    
 #     concept=['house']
     
 #     nlp = spacy.load("en_core_web_trf")
@@ -226,8 +227,112 @@ import glob
 #     concept_words = get_similar_words(concept)
 #     output_data = redact_concepts(nlp, data, concept_words, 'stderr', 'Given Input')
     
-#     print(output_data)
-    
 #     with open("output.txt", "w") as f:
 #         f.write(output_data)
+
 # test_redact_concepts()
+
+
+#-------------------------------------
+from transformers import pipeline
+import nltk
+from nltk.tokenize import sent_tokenize
+
+nltk.download('punkt_tab')
+
+classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
+redacted_text = []
+file = open("demo_files/is.arora-concept-summer-in",'r')
+input_text = file.read()
+# input_text = """Message-ID: <17450459.1075863593654.JavaMail.evans@thyme>
+# Date: Thu, 8 Jun 2000 04:41:00 -0700 (PDT)
+# From: dfuller@caiso.com
+# To: marketparticipants@caiso.com
+# Subject: Summer 2000 Market Participating Load Trial Program Re-Opener
+# Mime-Version: 1.0
+# Content-Type: text/plain; charset=us-ascii
+# Content-Transfer-Encoding: 7bit
+# X-From: "Fuller, Don" <DFuller@caiso.com>
+# X-To: Market Participants <IMCEAEX-_O=CAISO_OU=CORPORATE_CN=DISTRIBUTION+20LISTS_CN=MARKETPARTICIPANTS@caiso.com>
+# X-cc: 
+# X-bcc: 
+# X-Folder: \Robert_Badeer_Aug2000\Notes Folders\All documents
+# X-Origin: Badeer-R
+# X-FileName: rbadeer.nsf
+
+# >    Market Participants:
+# >
+# >    This notice announces the "re-opening" of the Summer
+# > 2000 Market Participating Load Trial Program.  Note that this program has
+# > also been referred to as the Summer 2000 A/S Load Program.   It involves
+# > load participation in the Non-Spin and Replacement Reserve and also the
+# > Supplemental Energy markets.  This re-opening notice does not apply to the
+# > Summer 2000 Demand Relief Program.
+# >
+# >    On February 29, 2000, the ISO issued a Market Notice
+# > for the "Summer 2000 Market Participating Load Trial Program" soliciting
+# > participation in the ISO's Ancillary Services and Supplemental Energy
+# > markets by additional Participating Loads.  The ISO proposed to
+# > accommodate such participation from June 15 to October 15, 2000 by Loads
+# > that could provide telemetry of their Demand data to the ISO's Energy
+# > Management System pursuant to a "relaxed" Technical Standard.  The ISO
+# > indicated that it would accept proposals for up to the following amounts
+# > of capacity for bidding in the specified markets:
+# >
+# >      Non-Spinning Reserve:   400 MW
+# >      Replacement Reserve:   400 MW
+# >      Supplemental Energy: 1,000 MW
+# >
+# >    In response to that solicitation, the ISO received
+# > several proposals and has been working to implement participation by the
+# > respondents.  In the course of the implementation process, the ISO has
+# > determined that the actual amounts of capacity that will potentially be
+# > available to participate will be below the maximum for any of the listed
+# > services.  Approximately half of the 400 MW in Non-Spin and Replacement
+# > has been committed (some subject to CPUC approval) leaving approximately
+# > 200 MW available in each category.  Approximately 750 MW is still
+# > available in the Supplemental Energy category.
+# >
+# >    Therefore, the ISO wishes to announce a re-opening
+# > of the period for submittal of proposals for the "Summer 2000 Market
+# > Participating Load Trial Program"  The ISO seeks to obtain the total
+# > amount of participation requested for the trial program within the time
+# > available.  At this time the ISO plans to leave this solicitation open
+# > until the maximum capacities are reached as noted above.  Also it should
+# > be noted that while the solicitation will be open until the requested
+# > capacities are reached,  the current timeframe of the Summer 2000 Trial
+# > Program and the applicability of the "relaxed" Technical Standards runs
+# > only through October 15, 2000.  At this time the ISO expects to continue
+# > this Load Program beyond October 15, 2000, however a final decision on
+# > continuation and the exact technical and commercial details applicable to
+# > any such continuation will be reached late this year based on a review of
+# > the Summer 2000 Program experience.
+# >
+# >
+# >    Additional respondents should follow the process and
+# > requirements set forth in the February 29, 2000 Market Notice in all
+# > respects other than the date for delivery of proposals.  This can be
+# > located on the ISO Home Page at  http://www.caiso.com/clientserv/load/ .
+# > or by navigating from Client Services to Stakeholder Processes to
+# > Participating Loads.  There are 4 documents listed under the Feb 29
+# > posting entitled " Formal Invitation for the Summer 2000 Load
+# > Participation in the ISO Ancillary  Service and Supplemental Energy
+# > Markets. "
+# >
+# >    If you have any questions, please direct them to
+# > Mike Dozier at 916-608-5708.
+# >
+# >
+# >    Don Fuller
+#     Director, Client Relations"""
+
+for sent in sent_tokenize(input_text):
+    result = classifier(sent, candidate_labels=["house"])
+    print(result)
+    if result['labels'][0] == "house" and result['scores'][0] > 0.33:
+        # print("Redacting")
+        redacted_text.append("█" * len(sent))
+    else:
+        redacted_text.append(sent)
+output_text = " ".join(redacted_text)
+print(output_text)
