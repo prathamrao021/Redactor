@@ -168,6 +168,30 @@ pipenv run python redactor.py --input 'path/to/input/files' --names --dates --ph
     - `filename` (str): The name of the file being processed.
 - Returns: The redacted text with concept-related words replaced by block characters.
 
+`test_redact_names`
+- Description: Tests the `redact_names` function to ensure it correctly redacts personal names from the text.
+- Parameters: None
+- Returns: None
+
+`test_redact_dates`
+- Description: Tests the `redact_dates` function to ensure it correctly redacts dates in various formats from the text.
+- Parameters: None
+- Returns: None
+
+`test_redact_phones`
+- Description: Tests the `redact_phones` function to ensure it correctly redacts phone numbers, including international formats, from the text.
+- Parameters: None
+- Returns: None
+
+`test_redact_addresses`
+- Description: Tests the `redact_addresses` function to ensure it correctly redacts physical addresses from the text.
+- Parameters: None
+- Returns: None
+
+`test_redact_concepts`
+- Description: Tests the `redact_concepts` function to ensure it correctly redacts words similar to the given concept from the text.
+- Parameters: None
+- Returns: None
 
 # Bugs and Assumptions
 
