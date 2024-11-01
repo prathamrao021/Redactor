@@ -98,7 +98,7 @@ Run the Redactor: You can now run the redactor script with the desired options. 
 ```bash
 pipenv run python redactor.py --input 'path/to/input/files' --names --dates --phones --address --concept 'house' --output 'path/to/output/files/' --stats stderr
 ```
-![video](video)
+[Demo Run](https://github.com/user-attachments/assets/7447ec37-0764-4649-9715-6385ebe69c6b)
 
 
 # Functions

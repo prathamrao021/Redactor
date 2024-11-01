@@ -12,6 +12,8 @@ from spacy.util import compile_infix_regex
 from transformers import pipeline
 import nltk
 from nltk.tokenize import sent_tokenize
+# from warning import filterwarnings
+# filterwarnings('ignore')
 
 nltk.download('punkt_tab')
 
@@ -247,31 +249,60 @@ def get_similar_words(concept):
     return synonyms
 
 
+# def redact_concepts(nlp, data, concept_words, concept, stats, filename):
+#     redacted_char = '\u2588'
+    
+#     doc = nlp(data)
+#     redacted_data = data
+#     print(doc)
+#     for sent in doc.sents:
+#         for word in sent:
+#             if word.text.lower() in concept_words:
+#                 redacted_data = redacted_data.replace(sent.text, redacted_char*len(sent.text))
+                
+#                 stats_data = f"{filename}|CONCEPT|{sent.text}|{sent.start_char}|{sent.end_char}"
+#                 if stats == 'stderr':
+#                     print(stats_data, file=sys.stderr)
+#                 elif stats == 'stdout':
+#                     print(stats_data)
+#                 else:
+#                     with open(stats, "a") as f:
+#                         f.write(stats_data)
+#                         f.write("\n")
+    
+#     classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
+#     redacted_text = []
+    
+#     for sent in sent_tokenize(redacted_data):
+        
+#         result = classifier(sent, candidate_labels=concept)
+#         if any(result['labels'][i] in concept and result['scores'][i] > 0.33 for i in range(len(result['labels']))):
+#             redacted_text.append("█" * len(sent))
+#             start_char = data.find(sent)
+#             end_char = start_char + len(sent)
+#             stats_data = f"{filename}|CONCEPT|{sent}|{start_char}|{end_char}"
+#             if stats == 'stderr':
+#                 print(stats_data, file=sys.stderr)
+#             elif stats == 'stdout':
+#                 print(stats_data)
+#             else:
+#                 with open(stats, "a") as f:
+#                     f.write(stats_data)
+#                     f.write("\n")
+#         else:
+#             redacted_text.append(sent)
+#     redacted_data = " ".join(redacted_text)
+    
+#     return redacted_data
+
+
 def redact_concepts(nlp, data, concept_words, concept, stats, filename):
     redacted_char = '\u2588'
-    
-    doc = nlp(data)
     redacted_data = data
-    print(doc)
-    for sent in doc.sents:
-        for word in sent:
-            if word.text.lower() in concept_words:
-                redacted_data = redacted_data.replace(sent.text, redacted_char*len(sent.text))
-                
-                stats_data = f"{filename}|CONCEPT|{sent.text}|{sent.start_char}|{sent.end_char}"
-                if stats == 'stderr':
-                    print(stats_data, file=sys.stderr)
-                elif stats == 'stdout':
-                    print(stats_data)
-                else:
-                    with open(stats, "a") as f:
-                        f.write(stats_data)
-                        f.write("\n")
-    
     classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
     redacted_text = []
     
-    for sent in sent_tokenize(data):
+    for sent in sent_tokenize(redacted_data):
         
         result = classifier(sent, candidate_labels=concept)
         if any(result['labels'][i] in concept and result['scores'][i] > 0.33 for i in range(len(result['labels']))):
@@ -291,6 +322,24 @@ def redact_concepts(nlp, data, concept_words, concept, stats, filename):
             redacted_text.append(sent)
     redacted_data = " ".join(redacted_text)
     
+    
+    doc = nlp(redacted_data)
+
+    for sent in doc.sents:
+        for word in sent:
+            if word.text.lower() in concept_words:
+                redacted_data = redacted_data.replace(sent.text, redacted_char*len(sent.text))
+                
+                stats_data = f"{filename}|CONCEPT|{sent.text}|{sent.start_char}|{sent.end_char}"
+                if stats == 'stderr':
+                    print(stats_data, file=sys.stderr)
+                elif stats == 'stdout':
+                    print(stats_data)
+                else:
+                    with open(stats, "a") as f:
+                        f.write(stats_data)
+                        f.write("\n")
+    
     return redacted_data
 
 if __name__ == "__main__":
@@ -304,13 +353,12 @@ if __name__ == "__main__":
     parser.add_argument("--phones", action="store_true", help="Redact phone numbers")
     parser.add_argument("--addresses", action="store_true", help="Redact addresses")
     
-    parser.add_argument("--concept",type=str, nargs='+', help="Redact a specific concept")
+    parser.add_argument('--concept', action='append', help='<Required> Set flag', required=True)
     
     parser.add_argument("--output", type=str, help="Output file")
     
     parser.add_argument("--stats", type=str, help="Print statistics")
     args = parser.parse_args()
-    
     nlp = spacy.load("en_core_web_trf")
     nlp.tokenizer = custom_tokenizer(nlp)
     
