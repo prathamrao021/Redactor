@@ -6,7 +6,6 @@ import pyap
 import os
 import glob
 import requests
-from names_dataset import NameDataset
 from spacy.tokenizer import Tokenizer
 from spacy.util import compile_infix_regex
 from transformers import pipeline
