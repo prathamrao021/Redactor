@@ -91,41 +91,6 @@ def redact_names(nlp, data, stats, filename):
                     f.write(stats_data)
                     f.write("\n")
     
-    for ent in doc.ents:
-        search = nd.search(ent.text)
-        if search['first_name'] is None and search['last_name'] is None:
-            continue
-        if search['first_name'] is not None:
-            for probs in search["first_name"]["country"].values():
-                if probs > 0.3:
-                    redacted_data = redacted_data.replace(ent.text, redacted_char*len(ent.text))
-            
-                    stats_data = f"{filename}|PERSON|{ent.text}|{ent.start_char}|{ent.end_char}"
-                    
-                    if stats == 'stderr':
-                        print(stats_data, file=sys.stderr)
-                    elif stats == 'stdout':
-                        print(stats_data)
-                    else:
-                        with open(stats, "a") as f:
-                            f.write(stats_data)
-                            f.write("\n")
-        if search['last_name'] is not None:
-            for probs in search["last_name"]["country"].values():
-                if probs > 0.3:
-                    redacted_data = redacted_data.replace(ent.text, redacted_char*len(ent.text))
-                    
-                    stats_data = f"{filename}|PERSON|{ent.text}|{ent.start_char}|{ent.end_char}"
-                    
-                    if stats == 'stderr':
-                        print(stats_data, file=sys.stderr)
-                    elif stats == 'stdout':
-                        print(stats_data)
-                    else:
-                        with open(stats, "a") as f:
-                            f.write(stats_data)
-                            f.write("\n")
-    
     for email in emails:
         username, domain = email.groups()
         start, end = email.span(1)
@@ -218,7 +183,7 @@ def redact_addresses(nlp, data, stats, filename):
                     f.write("\n")
                     
     redacted_data = ''.join(redacted_data)
-    doc = nlp(data)
+    doc = nlp(redacted_data)
     
     for ent in doc.ents:
         if ent.label_ == "LOC" or ent.label_ == "GPE" or ent.label_ == "FAC":
@@ -247,54 +212,6 @@ def get_similar_words(concept):
             synonyms.append(doc['word'])
         synonyms.append(con)
     return synonyms
-
-
-# def redact_concepts(nlp, data, concept_words, concept, stats, filename):
-#     redacted_char = '\u2588'
-    
-#     doc = nlp(data)
-#     redacted_data = data
-#     print(doc)
-#     for sent in doc.sents:
-#         for word in sent:
-#             if word.text.lower() in concept_words:
-#                 redacted_data = redacted_data.replace(sent.text, redacted_char*len(sent.text))
-                
-#                 stats_data = f"{filename}|CONCEPT|{sent.text}|{sent.start_char}|{sent.end_char}"
-#                 if stats == 'stderr':
-#                     print(stats_data, file=sys.stderr)
-#                 elif stats == 'stdout':
-#                     print(stats_data)
-#                 else:
-#                     with open(stats, "a") as f:
-#                         f.write(stats_data)
-#                         f.write("\n")
-    
-#     classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
-#     redacted_text = []
-    
-#     for sent in sent_tokenize(redacted_data):
-        
-#         result = classifier(sent, candidate_labels=concept)
-#         if any(result['labels'][i] in concept and result['scores'][i] > 0.33 for i in range(len(result['labels']))):
-#             redacted_text.append("█" * len(sent))
-#             start_char = data.find(sent)
-#             end_char = start_char + len(sent)
-#             stats_data = f"{filename}|CONCEPT|{sent}|{start_char}|{end_char}"
-#             if stats == 'stderr':
-#                 print(stats_data, file=sys.stderr)
-#             elif stats == 'stdout':
-#                 print(stats_data)
-#             else:
-#                 with open(stats, "a") as f:
-#                     f.write(stats_data)
-#                     f.write("\n")
-#         else:
-#             redacted_text.append(sent)
-#     redacted_data = " ".join(redacted_text)
-    
-#     return redacted_data
-
 
 def redact_concepts(nlp, data, concept_words, concept, stats, filename):
     redacted_char = '\u2588'
@@ -353,7 +270,7 @@ if __name__ == "__main__":
     parser.add_argument("--phones", action="store_true", help="Redact phone numbers")
     parser.add_argument("--addresses", action="store_true", help="Redact addresses")
     
-    parser.add_argument('--concept', action='append', help='<Required> Set flag', required=True)
+    parser.add_argument('--concept', action='append', help='<Required> Set flag')
     
     parser.add_argument("--output", type=str, help="Output file")
     

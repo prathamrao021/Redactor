@@ -234,105 +234,253 @@
 
 
 #-------------------------------------
-from transformers import pipeline
-import nltk
-from nltk.tokenize import sent_tokenize
+# from transformers import pipeline
+# import nltk
+# from nltk.tokenize import sent_tokenize
 
-nltk.download('punkt_tab')
+# nltk.download('punkt_tab')
 
-classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
-redacted_text = []
+# classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
+# redacted_text = []
+# file = open("demo_files/is.arora-concept-summer-in",'r')
+# input_text = file.read()
+# # input_text = """Message-ID: <17450459.1075863593654.JavaMail.evans@thyme>
+# # Date: Thu, 8 Jun 2000 04:41:00 -0700 (PDT)
+# # From: dfuller@caiso.com
+# # To: marketparticipants@caiso.com
+# # Subject: Summer 2000 Market Participating Load Trial Program Re-Opener
+# # Mime-Version: 1.0
+# # Content-Type: text/plain; charset=us-ascii
+# # Content-Transfer-Encoding: 7bit
+# # X-From: "Fuller, Don" <DFuller@caiso.com>
+# # X-To: Market Participants <IMCEAEX-_O=CAISO_OU=CORPORATE_CN=DISTRIBUTION+20LISTS_CN=MARKETPARTICIPANTS@caiso.com>
+# # X-cc: 
+# # X-bcc: 
+# # X-Folder: \Robert_Badeer_Aug2000\Notes Folders\All documents
+# # X-Origin: Badeer-R
+# # X-FileName: rbadeer.nsf
+
+# # >    Market Participants:
+# # >
+# # >    This notice announces the "re-opening" of the Summer
+# # > 2000 Market Participating Load Trial Program.  Note that this program has
+# # > also been referred to as the Summer 2000 A/S Load Program.   It involves
+# # > load participation in the Non-Spin and Replacement Reserve and also the
+# # > Supplemental Energy markets.  This re-opening notice does not apply to the
+# # > Summer 2000 Demand Relief Program.
+# # >
+# # >    On February 29, 2000, the ISO issued a Market Notice
+# # > for the "Summer 2000 Market Participating Load Trial Program" soliciting
+# # > participation in the ISO's Ancillary Services and Supplemental Energy
+# # > markets by additional Participating Loads.  The ISO proposed to
+# # > accommodate such participation from June 15 to October 15, 2000 by Loads
+# # > that could provide telemetry of their Demand data to the ISO's Energy
+# # > Management System pursuant to a "relaxed" Technical Standard.  The ISO
+# # > indicated that it would accept proposals for up to the following amounts
+# # > of capacity for bidding in the specified markets:
+# # >
+# # >      Non-Spinning Reserve:   400 MW
+# # >      Replacement Reserve:   400 MW
+# # >      Supplemental Energy: 1,000 MW
+# # >
+# # >    In response to that solicitation, the ISO received
+# # > several proposals and has been working to implement participation by the
+# # > respondents.  In the course of the implementation process, the ISO has
+# # > determined that the actual amounts of capacity that will potentially be
+# # > available to participate will be below the maximum for any of the listed
+# # > services.  Approximately half of the 400 MW in Non-Spin and Replacement
+# # > has been committed (some subject to CPUC approval) leaving approximately
+# # > 200 MW available in each category.  Approximately 750 MW is still
+# # > available in the Supplemental Energy category.
+# # >
+# # >    Therefore, the ISO wishes to announce a re-opening
+# # > of the period for submittal of proposals for the "Summer 2000 Market
+# # > Participating Load Trial Program"  The ISO seeks to obtain the total
+# # > amount of participation requested for the trial program within the time
+# # > available.  At this time the ISO plans to leave this solicitation open
+# # > until the maximum capacities are reached as noted above.  Also it should
+# # > be noted that while the solicitation will be open until the requested
+# # > capacities are reached,  the current timeframe of the Summer 2000 Trial
+# # > Program and the applicability of the "relaxed" Technical Standards runs
+# # > only through October 15, 2000.  At this time the ISO expects to continue
+# # > this Load Program beyond October 15, 2000, however a final decision on
+# # > continuation and the exact technical and commercial details applicable to
+# # > any such continuation will be reached late this year based on a review of
+# # > the Summer 2000 Program experience.
+# # >
+# # >
+# # >    Additional respondents should follow the process and
+# # > requirements set forth in the February 29, 2000 Market Notice in all
+# # > respects other than the date for delivery of proposals.  This can be
+# # > located on the ISO Home Page at  http://www.caiso.com/clientserv/load/ .
+# # > or by navigating from Client Services to Stakeholder Processes to
+# # > Participating Loads.  There are 4 documents listed under the Feb 29
+# # > posting entitled " Formal Invitation for the Summer 2000 Load
+# # > Participation in the ISO Ancillary  Service and Supplemental Energy
+# # > Markets. "
+# # >
+# # >    If you have any questions, please direct them to
+# # > Mike Dozier at 916-608-5708.
+# # >
+# # >
+# # >    Don Fuller
+# #     Director, Client Relations"""
+
+# for sent in sent_tokenize(input_text):
+#     result = classifier(sent, candidate_labels=["house"])
+#     print(result)
+#     if result['labels'][0] == "house" and result['scores'][0] > 0.33:
+#         # print("Redacting")
+#         redacted_text.append("█" * len(sent))
+#     else:
+#         redacted_text.append(sent)
+# output_text = " ".join(redacted_text)
+# print(output_text)
+
+
+#--------------------------------------
+# from redactor import redact_addresses
+# import argparse
+# import sys
+# import spacy
+# import re
+# import pyap
+# import os
+# import glob
+
+
+# def test_redact_addresses():
+#     data = """John Smith was excited to move into his new home at 123 Maple Street, Springfield, IL 62704. He had spent months searching for the perfect place and finally found it. His friend, Jane Doe, lived nearby at 456 Oak Avenue, Springfield, IL 62705, and they planned to meet up often. John's office was located at 789 Pine Road, Suite 101, Springfield, IL 62706, just a short drive from his new house.
+
+#     On weekends, John liked to visit his favorite coffee shop, Brewed Awakenings, at 321 Elm Street, Springfield, IL 62707. He often met his colleague, Michael Johnson, there. Michael's address was 654 Birch Lane, Springfield, IL 62708, and they carpooled to work together. John's gym, Fit for Life, was at 987 Cedar Boulevard, Springfield, IL 62709, where he worked out every morning.
+
+#     John's parents lived in a nearby town at 111 Maple Street, Rivertown, IL 62001. He visited them every Sunday for dinner. His sister, Emily Davis, lived at 222 Oak Avenue, Rivertown, IL 62002, and they often met up at their parents' house. John's best friend, Robert Brown, had recently moved to 333 Pine Road, Rivertown, IL 62003, and they planned to catch up soon.
+
+#     For his medical needs, John visited Dr. Lisa White at the Springfield Medical Center, located at 444 Elm Street, Springfield, IL 62710. His dentist, Dr. David Green, had an office at 555 Birch Lane, Springfield, IL 62711. John also had regular appointments with his chiropractor, Dr. James Gray, whose clinic was at 666 Cedar Boulevard, Springfield, IL 62712.
+
+#     John's favorite restaurant, The Gourmet Kitchen, was at 777 Maple Street, Springfield, IL 62713. He often dined there with his girlfriend, Rachel Yellow, who lived at 888 Oak Avenue, Springfield, IL 62714. They enjoyed trying new dishes and spending time together.
+
+#     John's plumber, Mike Purple, had his office at 999 Pine Road, Springfield, IL 62715. Whenever John had plumbing issues, he knew he could rely on Mike to fix them promptly. His electrician, Tom Pink, was based at 1010 Elm Street, Springfield, IL 62716, and had helped John with several electrical projects in his new home.
+
+#     As John settled into his new life in Springfield, he felt grateful for the support of his friends and family. He looked forward to creating many happy memories in his new home at 123 Maple Street, Springfield, IL 62704."""
+    
+#     nlp = spacy.load("en_core_web_trf")
+#     print("dfvdfgb")
+#     redacted_result = redact_addresses(nlp, data, 'stderr', 'Given Input')
+    
+#     print(redacted_result)
+
+# test_redact_addresses()
+
+#----------------------------
+from redactor import redact_addresses
+import argparse
+import sys
+import spacy
+import re
+import pyap
+import os
+import glob
+from presidio_analyzer import AnalyzerEngine
+from presidio_anonymizer import AnonymizerEngine
+
+
+
+
+
+def redact_addresses(nlp, data, stats, filename):
+    redacted_char = '\u2588'
+    
+    redacted_data = data
+    
+    #new
+    analyzer = AnalyzerEngine()
+    anonymizer = AnonymizerEngine()
+
+    results = analyzer.analyze(text=redacted_data, entities=["LOCATION", "PERSON"], language='en')
+
+    stats_data = []
+
+    for result in results:
+        # redacted_data = redacted_data.replace(result.text, redacted_char * len(result.text))
+        print(result)
+        stat = f"{filename}|{result.entity_type}|{result.text}|{result.start}|{result.end}"
+        
+        if stats == 'stderr':
+            print(stat, file=sys.stderr)
+        elif stats == 'stdout':
+            print(stat)
+        else:
+            stats_data.append(stat)
+
+    if stats not in ['stderr', 'stdout']:
+        with open(stats, "a") as f:
+            f.write("\n".join(stats_data) + "\n")
+    
+    #new
+    addresses = pyap.parse(data, country='US')
+    redacted_data = list(data)
+    for address in addresses:
+        pattern = re.escape(address.full_address)
+        for match in re.finditer(pattern, data):
+            start, end = match.start(), match.end()
+            redacted_data[start:end] = redacted_char * (end - start)
+
+            stats_data = f"{filename}|ADDRESS|{address.full_address}|{start}|{end}"
+            
+            if stats == 'stderr':
+                print(stats_data, file=sys.stderr)
+            elif stats == 'stdout':
+                print(stats_data)
+            else:
+                with open(stats, "a") as f:
+                    f.write(stats_data)
+                    f.write("\n")
+    
+    #new      
+    address_pattern = r'\d+\s+\w+(\s\w+)*,\s?\d{1,2}\w{2}\s\w+\s?,?\s?[A-Z]{2}\s\d{5}'
+    addresses = list(re.finditer(address_pattern, redacted_data))
+    
+    for address in addresses:
+        redacted_data = redacted_data.replace(address.group(), redacted_char*len(address.group()))
+        
+        stats_data = f"{filename}|ADDRESS|{address.group()}|{address.start()}|{address.end()}"
+        
+        if stats == 'stderr':
+            print(stats_data, file=sys.stderr)
+        elif stats == 'stdout':
+            print(stats_data)
+        else:
+            with open(stats, "a") as f:
+                f.write(stats_data)
+                f.write("\n")
+                    
+    redacted_data = ''.join(redacted_data)
+    
+    
+    #new
+    doc = nlp(redacted_data)
+    
+    for ent in doc.ents:
+        if ent.label_ == "LOC" or ent.label_ == "GPE" or ent.label_ == "FAC":
+            
+            redacted_data = redacted_data.replace(ent.text, redacted_char*len(ent.text))
+            
+            stats_data = f"{filename}|ADDRESS|{ent.text}|{ent.start_char}|{ent.end_char}"
+            
+            if stats == 'stderr':
+                print(stats_data, file=sys.stderr)
+            elif stats == 'stdout':
+                print(stats_data)
+            else:
+                with open(stats, "a") as f:
+                    f.write(stats_data)
+                    f.write("\n")
+    
+    return redacted_data
+
+
 file = open("demo_files/is.arora-concept-summer-in",'r')
-input_text = file.read()
-# input_text = """Message-ID: <17450459.1075863593654.JavaMail.evans@thyme>
-# Date: Thu, 8 Jun 2000 04:41:00 -0700 (PDT)
-# From: dfuller@caiso.com
-# To: marketparticipants@caiso.com
-# Subject: Summer 2000 Market Participating Load Trial Program Re-Opener
-# Mime-Version: 1.0
-# Content-Type: text/plain; charset=us-ascii
-# Content-Transfer-Encoding: 7bit
-# X-From: "Fuller, Don" <DFuller@caiso.com>
-# X-To: Market Participants <IMCEAEX-_O=CAISO_OU=CORPORATE_CN=DISTRIBUTION+20LISTS_CN=MARKETPARTICIPANTS@caiso.com>
-# X-cc: 
-# X-bcc: 
-# X-Folder: \Robert_Badeer_Aug2000\Notes Folders\All documents
-# X-Origin: Badeer-R
-# X-FileName: rbadeer.nsf
-
-# >    Market Participants:
-# >
-# >    This notice announces the "re-opening" of the Summer
-# > 2000 Market Participating Load Trial Program.  Note that this program has
-# > also been referred to as the Summer 2000 A/S Load Program.   It involves
-# > load participation in the Non-Spin and Replacement Reserve and also the
-# > Supplemental Energy markets.  This re-opening notice does not apply to the
-# > Summer 2000 Demand Relief Program.
-# >
-# >    On February 29, 2000, the ISO issued a Market Notice
-# > for the "Summer 2000 Market Participating Load Trial Program" soliciting
-# > participation in the ISO's Ancillary Services and Supplemental Energy
-# > markets by additional Participating Loads.  The ISO proposed to
-# > accommodate such participation from June 15 to October 15, 2000 by Loads
-# > that could provide telemetry of their Demand data to the ISO's Energy
-# > Management System pursuant to a "relaxed" Technical Standard.  The ISO
-# > indicated that it would accept proposals for up to the following amounts
-# > of capacity for bidding in the specified markets:
-# >
-# >      Non-Spinning Reserve:   400 MW
-# >      Replacement Reserve:   400 MW
-# >      Supplemental Energy: 1,000 MW
-# >
-# >    In response to that solicitation, the ISO received
-# > several proposals and has been working to implement participation by the
-# > respondents.  In the course of the implementation process, the ISO has
-# > determined that the actual amounts of capacity that will potentially be
-# > available to participate will be below the maximum for any of the listed
-# > services.  Approximately half of the 400 MW in Non-Spin and Replacement
-# > has been committed (some subject to CPUC approval) leaving approximately
-# > 200 MW available in each category.  Approximately 750 MW is still
-# > available in the Supplemental Energy category.
-# >
-# >    Therefore, the ISO wishes to announce a re-opening
-# > of the period for submittal of proposals for the "Summer 2000 Market
-# > Participating Load Trial Program"  The ISO seeks to obtain the total
-# > amount of participation requested for the trial program within the time
-# > available.  At this time the ISO plans to leave this solicitation open
-# > until the maximum capacities are reached as noted above.  Also it should
-# > be noted that while the solicitation will be open until the requested
-# > capacities are reached,  the current timeframe of the Summer 2000 Trial
-# > Program and the applicability of the "relaxed" Technical Standards runs
-# > only through October 15, 2000.  At this time the ISO expects to continue
-# > this Load Program beyond October 15, 2000, however a final decision on
-# > continuation and the exact technical and commercial details applicable to
-# > any such continuation will be reached late this year based on a review of
-# > the Summer 2000 Program experience.
-# >
-# >
-# >    Additional respondents should follow the process and
-# > requirements set forth in the February 29, 2000 Market Notice in all
-# > respects other than the date for delivery of proposals.  This can be
-# > located on the ISO Home Page at  http://www.caiso.com/clientserv/load/ .
-# > or by navigating from Client Services to Stakeholder Processes to
-# > Participating Loads.  There are 4 documents listed under the Feb 29
-# > posting entitled " Formal Invitation for the Summer 2000 Load
-# > Participation in the ISO Ancillary  Service and Supplemental Energy
-# > Markets. "
-# >
-# >    If you have any questions, please direct them to
-# > Mike Dozier at 916-608-5708.
-# >
-# >
-# >    Don Fuller
-#     Director, Client Relations"""
-
-for sent in sent_tokenize(input_text):
-    result = classifier(sent, candidate_labels=["house"])
-    print(result)
-    if result['labels'][0] == "house" and result['scores'][0] > 0.33:
-        # print("Redacting")
-        redacted_text.append("█" * len(sent))
-    else:
-        redacted_text.append(sent)
-output_text = " ".join(redacted_text)
-print(output_text)
+text = file.read()
+nlp = spacy.load("en_core_web_trf")
+redacted_text = redact_addresses(nlp, text, "stderr", "Given Input")

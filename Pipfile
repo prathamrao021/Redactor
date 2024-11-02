@@ -10,6 +10,8 @@ pytest = "*"
 nltk = "*"
 transformers = "*"
 names-dataset = "*"
+presidio-analyzer = "*"
+presidio-anonymizer = "*"
 
 [dev-packages]
 
