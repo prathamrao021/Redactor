@@ -8,11 +8,9 @@ spacy = "*"
 pyap = "*"
 pytest = "*"
 nltk = "*"
-en_core_web_trf = {file ="https://github.com/explosion/spacy-models/releases/download/en_core_web_trf-3.5.0/en_core_web_trf-3.5.0.tar.gz"}
+en_core_web_trf = {file ="https://github.com/explosion/spacy-models/releases/download/en_core_web_trf-3.8.0/en_core_web_trf-3.8.0-py3-none-any.whl"}
 transformers = "*"
-names-dataset = "*"
-presidio-analyzer = "*"
-presidio-anonymizer = "*"
+project1 = {file = ".", editable = true}
 
 [dev-packages]
 
