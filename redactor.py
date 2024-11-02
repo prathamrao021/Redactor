@@ -11,8 +11,7 @@ from spacy.util import compile_infix_regex
 from transformers import pipeline
 import nltk
 from nltk.tokenize import sent_tokenize
-# from warning import filterwarnings
-# filterwarnings('ignore')
+
 
 nltk.download('punkt_tab')
 
@@ -63,17 +62,9 @@ def redact_names(nlp, data, stats, filename):
     
     doc = nlp(data)
     
-    # mails = list(re.finditer(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', data))
-    # name_mail =[]
-    
-    # for mail in mails:
-    #     name_mail.append([mail.group().split('@')[0],mail.start(),mail.end()])
-    
     emails = list(re.finditer(r'\b([A-Za-z0-9._%+-]+)@([A-Za-z0-9.-]+\.[A-Z|a-z]{2,})\b', data))
     
-    
     redacted_data = data
-    nd = NameDataset()
     
     for ent in doc.ents:
         if ent.label_ == "PERSON":
