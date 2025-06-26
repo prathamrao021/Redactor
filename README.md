@@ -1,4 +1,4 @@
-# CIS6930 Fall 2024 -- Project 1
+# Redactor
 
 Name: Pratham Rao
 
